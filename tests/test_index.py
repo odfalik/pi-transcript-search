@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 
+import pytest
 from conftest import message, write_session
 
 from pi_transcript_search.index import ConversationIndex
@@ -222,7 +223,24 @@ def test_show_is_bounded_and_role_aware(tmp_path: Path, sessions_dir: Path) -> N
 
 def test_index_database_is_private(tmp_path: Path) -> None:
     path = tmp_path / "private" / "index.sqlite"
+    path.parent.mkdir(mode=0o755)
+    path.touch(mode=0o644)
+    os.chmod(path.parent, 0o755)
+    os.chmod(path, 0o644)
+
     with ConversationIndex(path):
         pass
+
     assert os.stat(path).st_mode & 0o777 == 0o600
     assert os.stat(path.parent).st_mode & 0o777 == 0o700
+
+
+def test_index_fails_closed_when_permissions_cannot_be_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def deny_chmod(_path: Path, _mode: int) -> None:
+        raise OSError("denied")
+
+    monkeypatch.setattr(os, "chmod", deny_chmod)
+    with pytest.raises(PermissionError, match="cannot secure transcript index path"):
+        ConversationIndex(tmp_path / "private" / "index.sqlite")

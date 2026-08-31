@@ -29,6 +29,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/pi_transcript_search"]
 
+[tool.hatch.build.targets.sdist]
+include = ["src/pi_transcript_search", "pyproject.toml", "README.md", "LICENSE"]
+
 [dependency-groups]
 dev = ["pytest>=8.0"]
 

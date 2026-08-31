@@ -6,6 +6,7 @@ import hashlib
 import os
 import re
 import sqlite3
+import stat
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
@@ -91,14 +92,34 @@ class RefreshStats:
         }
 
 
+def _enforce_private_mode(path: Path, mode: int) -> None:
+    try:
+        os.chmod(path, mode)
+        actual = stat.S_IMODE(path.stat().st_mode)
+    except OSError as error:
+        raise PermissionError(f"cannot secure transcript index path: {path}") from error
+    if actual != mode:
+        raise PermissionError(
+            f"cannot secure transcript index path: {path} has mode {actual:#o}"
+        )
+
+
 class ConversationIndex:
     def __init__(self, db_path: Path):
         self.db_path = db_path.expanduser().resolve()
         self.db_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        try:
-            os.chmod(self.db_path.parent, 0o700)
-        except OSError:
-            pass
+        _enforce_private_mode(self.db_path.parent, 0o700)
+        if not self.db_path.exists():
+            try:
+                descriptor = os.open(
+                    self.db_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600
+                )
+            except FileExistsError:
+                pass
+            else:
+                os.close(descriptor)
+        _enforce_private_mode(self.db_path, 0o600)
+
         self.db = sqlite3.connect(self.db_path)
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA foreign_keys = ON")
@@ -109,10 +130,6 @@ class ConversationIndex:
             (str(SCHEMA_VERSION),),
         )
         self.db.commit()
-        try:
-            os.chmod(self.db_path, 0o600)
-        except OSError:
-            pass
 
     def close(self) -> None:
         self.db.close()

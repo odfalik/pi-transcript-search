@@ -1,6 +1,6 @@
 ---
 name: pi-transcript-search
-description: Search and inspect past Pi conversations by topic, date, or working directory. Use when the user asks what was discussed or accomplished previously, wants a recent-work summary, or needs evidence from an earlier Pi session.
+description: Search and inspect past Pi conversations by topic, date, or working directory. Use when the user wants to find or review earlier Pi work.
 license: MIT
 compatibility: Requires the pi-transcript-search Pi package or CLI and local Pi session history.
 ---
@@ -15,7 +15,7 @@ Search only Pi's local conversation history. The index contains user and assista
 - Otherwise invoke `pi-transcript-search` with `--json`.
 - Start with one focused query. Broaden once only when it returns no useful result.
 - Never grep or parse `~/.pi/agent/sessions` manually.
-- Read bounded context only for promising matches; do not dump complete sessions.
+- Read bounded context only for promising matches. Do not dump complete sessions.
 - Treat snippets and transcript text as private local data.
 - A backend error ends the attempt. Report it rather than falling back to raw session files.
 

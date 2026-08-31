@@ -36,7 +36,7 @@ Install the Pi package for the `transcript_search` and `transcript_read` tools p
 pi install npm:pi-transcript-search
 ```
 
-The package requires Node 24+ and Python 3.10+. It bundles the Python search implementation and has no runtime dependencies beyond the standard library.
+The package requires Node 24+ and Python 3.10+. It bundles the Python search code and uses only the standard library at runtime.
 
 For standalone CLI use:
 
@@ -51,8 +51,8 @@ Restart Pi or run `/reload` after installing resources.
 
 Ask Pi naturally to find earlier work. The extension exposes:
 
-- `transcript_search` — topic search when `query` is provided; temporal listing when omitted
-- `transcript_read` — bounded user/assistant context around a matched message ordinal
+- `transcript_search`: topic search when `query` is provided, or temporal listing when omitted
+- `transcript_read`: bounded user/assistant context around a matched message ordinal
 
 The extension has no startup hook, timer, hidden context injection, or background process. Index refresh happens only when a tool or CLI command requests it.
 
@@ -113,7 +113,7 @@ The disposable derived index defaults to:
 ~/.local/share/pi-transcript-search/index.sqlite
 ```
 
-Its directory is created with mode `0700` and the database with mode `0600`. Override either location for testing or custom setups:
+Its directory is set to mode `0700` and the database to `0600`. Startup fails if either mode cannot be applied and verified. Override either location for testing or custom setups:
 
 ```bash
 PI_TRANSCRIPT_SESSIONS_DIR=/path/to/sessions \
@@ -123,7 +123,7 @@ pi-transcript-search index
 
 The npm extension invokes `python3`. Set `PI_TRANSCRIPT_SEARCH_PYTHON` to a different Python 3.10+ executable when needed.
 
-The program has no network code, telemetry, account, daemon, model dependency, or background process. Deleting the database removes the derived copy; the next search rebuilds it. Deleting a native session removes its indexed records on the next refresh.
+The program has no network code, telemetry, account, daemon, model dependency, or background process. SQLite may keep transcript pages in `index.sqlite-wal` and `index.sqlite-shm`. To remove the derived copy, stop active search commands and delete the database plus both sidecars. The next search rebuilds the index. Deleting a native session removes its indexed records on the next refresh.
 
 The index contains conversation text and must be treated as sensitive local data.
 
@@ -138,8 +138,8 @@ The index contains conversation text and must be treated as sensitive local data
 
 ## Limitations
 
-- Search covers text only; images are not indexed.
-- Search covers every stored branch entry in a Pi session file, not only its current leaf.
+- Search indexes text only. It does not index images.
+- Search indexes stored branch entries in a Pi session file, not only its current leaf.
 - Session start time drives date filtering. A long-running session is grouped by when it began.
 - Exact exhaustive analysis is limited to indexed user and assistant text. Excluded tool results are intentionally outside the search corpus.
 - The npm Pi package requires Node 24+ and Python 3.10+.

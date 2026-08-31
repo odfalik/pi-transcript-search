@@ -1,0 +1,37 @@
+[project]
+name = "pi-transcript-search"
+version = "0.1.0"
+description = "Fast, local, evidence-bearing search for Pi conversation history"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Pi Transcript Search Maintainers" }]
+keywords = ["pi", "conversation", "search", "agent", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = []
+
+[project.scripts]
+pi-transcript-search = "pi_transcript_search.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/odfalik/pi-transcript-search"
+Issues = "https://github.com/odfalik/pi-transcript-search/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pi_transcript_search"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

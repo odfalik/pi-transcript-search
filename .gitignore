@@ -1,0 +1,15 @@
+/.venv/
+/node_modules/
+/.pytest_cache/
+/.ruff_cache/
+/__pycache__/
+*.py[cod]
+/dist/
+/build/
+*.egg-info/
+*.tgz
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.pi-loop.json.lock
+.DS_Store
